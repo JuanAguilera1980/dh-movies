@@ -210,36 +210,62 @@ http.createServer((req, res) => {
 	movies.filter(function (cadaPeli) {
 		cadaPeli.release_date > "2019-10-01" ? pelisEnCartelera.push(`Título: ${cadaPeli.title}\n Reseña: ${cadaPeli.overview}\n`) : '';
 	});
-	// Mas votadas
-	let masVotadas = [];
-	let ratings = [];
-	for (let cadaPeli of masVotadas) {
-		ratings.push(cadaPeli.vote_average);
-	};
 	
-	movies.filter(function(cadaPeli) {
-		cadaPeli.vote_average >= 7 ? masVotadas.push(cadaPeli.title, cadaPeli.vote_average, cadaPeli.overview) : '';
+	// Mas votadas
+	let masVotadas = movies.filter(function(cadaPeli) {
+		return cadaPeli.vote_average >= 7;
+	});
+
+	let ratings = masVotadas.map(function(cadaPeli){
+		return cadaPeli.vote_average;
+	});
+
+	let listadoMasVotadas = masVotadas.map(function(cadaPeli) {
+		return `Título: ${cadaPeli.title}${'\n'}Rating: ${cadaPeli.vote_average}${'\n'}Reseña: ${cadaPeli.overview}${'\n'}`;
 	});
 	
+	let sumaRatings = ratings.reduce(function(acu, cadaRating){
+		return acu + cadaRating;
+	});
+	let promedioRatings = sumaRatings/masVotadas.length;
+	let promedio2Decimales = promedioRatings.toFixed(2);
+	
+	// Sucursales
+	let salas = theaters.map(function(cadaPeli){
+		return cadaPeli.total_rooms;
+	});
+	let totalSalas = salas.reduce(function(acum, cadaPeli){
+		return acum + cadaPeli;
+	});
+
+	let listadoDeSalas = theaters.map(function(cadaPeli){
+		return `Nombre: ${cadaPeli.name}${'\n'}Dirección: ${cadaPeli.address}${'\n'}Descripción: ${cadaPeli.description}`
+	});
+
+	// FAQS
+	let listadoPreguntas = faqs.map(function(cadaFaq){
+		return `Pregunta: ${cadaFaq.faq_title}${'\n'}Respuesta: ${cadaFaq.faq_answer}${'\n'}`
+	});
+
 	switch (req.url) {
 		// Home
 		case '/':
-			res.end(`Home${'\n\n'}Bienvenidos a DH Movies el mejor sitio para encontrar las mejores películas, incluso mucho mejor que Netflix, Cuevana y PopCorn.${'\n\n'}Películas en cartelera: ${movies.length}${'\n\n'}${tituloPeliculas.join('\n')}${'\n\n'}Recordá que podés visitar las secciones:${'\n\n'}En Cartelera${'\n'}Más Votadas${'\n'}Sucursales${'\n'}Contacto${'\n'}Preguntas Frecuentes`);
+			res.end(`Bienvenidos a DH Movies el mejor sitio para encontrar las mejores películas, incluso mucho mejor que Netflix, Cuevana y PopCorn.${'\n\n'}Películas en cartelera: ${movies.length}${'\n\n'}${tituloPeliculas.join('\n')}${'\n\n'}Recordá que podés visitar las secciones:${'\n\n'}En Cartelera${'\n'}Más Votadas${'\n'}Sucursales${'\n'}Contacto${'\n'}Preguntas Frecuentes`);
 			break;
 		case '/en-cartelera':
 			res.end(`En cartelera${'\n\n'}Total de Películas: ${pelisEnCartelera.length}${'\n\n'}Listado de Películas: ${'\n\n'}${pelisEnCartelera.join('\n')}`);
 			break;
 		case '/mas-votadas':
-		res.end(`Más votadas${'\n'} Total de Películas: ${masVotadas.length}${'\n\n'} Rating promedio: ${'\n\n'} Listado de Películas:${'\n\n'}${masVotadas.join('\n')}`);
+		res.end(`Más votadas${'\n\n'}Total de Películas: ${masVotadas.length}${'\n\n'}Rating promedio: ${promedio2Decimales}${'\n\n'}Listado de Películas: ${'\n\n'}${listadoMasVotadas.join('\n')}`);
 			break;
 		case '/sucursales':
-			res.end('Sucursales');
+			res.end(`Nuestras Salas${'\n\n'}Total de Salas: ${totalSalas}${'\n\n'}Listado de Salas:${'\n\n'}${listadoDeSalas.join('\n\n')}`);
 			break;
 		case '/contacto':
-			res.end('Contacto');
+			res.end(`Contáctanos${'\n\n'}¿Tenés algo para contarnos? Nos encanta escuchar a nuestros clientes. Si deseas contactarnos podés escribirnos al siguiente email: dhmovies@digitalhouse.com o en las redes sociales. Envianos tu consulta,sugerencia o reclamo y será respondido a la brevedad posible. Recordá que también podes consultar la sección de Preguntas Frecuentes para obtener respuestas inmediatas a los problemas más comunes.`);
 			break;
 		case '/preguntas-frecuentes':
-			res.end('Preguntas Frecuentes');
+			res.end(`Preguntas Frecuentes${'\n\n'}Total de Preguntas: ${faqs.length}${'\n\n'}Listado de Preguntas:${'\n\n'}${listadoPreguntas.join('\n')}`);
 			break;
 		default:
 			res.end('404 not found')
